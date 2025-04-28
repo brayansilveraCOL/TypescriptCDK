@@ -1,4 +1,4 @@
 export const DevelopmentEnv = {
-    account: process.env.CDK_DEV_ACCOUNT || '000000000000',
-    region: process.env.CDK_DEV_REGION || '000000000000'
+    account: process.env.CDK_DEV_ACCOUNT || '965234186927',
+    region: process.env.CDK_DEV_REGION || 'us-east-1'
 };
