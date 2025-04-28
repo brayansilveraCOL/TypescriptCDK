@@ -34,7 +34,7 @@ export class APIProjectStack extends Stack {
             runtime: latestPython,
             timeout: Duration.seconds(15),
             memorySize: 150,
-            ephemeralStorageSize: Size.mebibytes(120),
+            ephemeralStorageSize: Size.mebibytes(512),
             logGroup: logGroupFnUStackFunc,
             environment: envVars,
             functionName: `UStackFunc_${environment}`,
