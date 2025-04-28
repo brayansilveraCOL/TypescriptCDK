@@ -3,7 +3,7 @@ name: Deploy CDK to AWS
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
@@ -16,7 +16,7 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'   # o la versión que uses para tu proyecto CDK
+          node-version: '23'
 
       - name: Instalar dependencias
         run: npm install
