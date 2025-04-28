@@ -28,12 +28,7 @@ export class VpcProjectStack extends Stack {
       ],
     });
     this.arnDynamodbTable = new dynamodb.TableV2(this, `UStackDynamoDB_${environment}`, {
-      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
-      removalPolicy: RemovalPolicy.DESTROY,
-      replicas: [
-        { region: 'us-east-1' },
-        { region: 'us-east-2' },
-      ],
+      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING }
     });
   }
 }
