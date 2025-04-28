@@ -34,5 +34,8 @@ jobs:
       - name: Ejecutar CDK Synth
         run: cdk synth -c env=dev
 
+      - name: Boostrap
+        run: cdk bootstrap aws://${{secrets.CDK_DEV_ACCOUNT}}/${{secrets.CDK_DEV_REGION}} -c env=dev
+
       - name: Desplegar CDK
         run: cdk deploy --all --require-approval never -c env=dev

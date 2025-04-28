@@ -75,7 +75,7 @@ Resources:
                   'body': json.dumps({'message': message})
               }
         Timeout: 30
-        MemorySize: 128
+        MemorySize: 512
       Role: !GetAtt LambdaExecutionRole.Arn
 
   S3Trigger:
