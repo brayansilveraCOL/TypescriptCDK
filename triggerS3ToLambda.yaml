@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Despliega una función Lambda que se ejecuta al subir un archivo a un bucket S3.
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Nombre del bucket S3 que activará la función Lambda.
+  LambdaFunctionName:
+    Type: String
+    Description: Nombre de la función Lambda a desplegar.
+  HandlerFunctionName:
+    Type: String
+  Runtime:
+    Type: String
+    Default: python3.11
+    AllowedValues:
+      - python3.11
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaS3Permissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt S3Bucket.Arn
+                  - !Join ['', [!GetAtt S3Bucket.Arn, '/*']]
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref LambdaFunctionName
+      Handler: !Ref HandlerFunctionName
+      Runtime: !Ref Runtime
+      Code:
+        ZipFile: |
+          import json
+          
+          def handler(event, context):
+              print("Evento recibido:", json.dumps(event))
+              print("Contexto:", context)
+              bucket_name = event['Records'][0]['s3']['bucket']['name']
+              key = event['Records'][0]['s3']['object']['key']
+              message = f"¡Hola desde Lambda! Archivo '{key}' subido al bucket '{bucket_name}'."
+              print(message)
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps({'message': message})
+              }
+        Timeout: 30
+        MemorySize: 128
+      Role: !GetAtt LambdaExecutionRole.Arn
+
+  S3Trigger:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt S3Bucket.Arn
+      FunctionName: !GetAtt LambdaFunction.Arn
+      Events:
+        - s3:ObjectCreated:*
