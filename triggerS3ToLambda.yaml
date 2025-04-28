@@ -21,6 +21,10 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref BucketName
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Function: !GetAtt LambdaFunction.Arn
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -59,6 +63,8 @@ Resources:
       FunctionName: !Ref LambdaFunctionName
       Handler: !Ref HandlerFunctionName
       Runtime: !Ref Runtime
+      Timeout: 30
+      MemorySize: 128
       Code:
         ZipFile: |
           import json
@@ -74,14 +80,11 @@ Resources:
                   'statusCode': 200,
                   'body': json.dumps({'message': message})
               }
-        Timeout: 30
-        MemorySize: 512
       Role: !GetAtt LambdaExecutionRole.Arn
-
-  S3Trigger:
-    Type: AWS::Lambda::EventSourceMapping
+  S3InvokeLambdaPermission:
+    Type: AWS::Lambda::Permission
     Properties:
-      EventSourceArn: !GetAtt S3Bucket.Arn
-      FunctionName: !GetAtt LambdaFunction.Arn
-      Events:
-        - s3:ObjectCreated:*
+      FunctionName: !Ref LambdaFunctionName
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !GetAtt S3Bucket.Arn
