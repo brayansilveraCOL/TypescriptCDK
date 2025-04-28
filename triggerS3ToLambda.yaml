@@ -22,9 +22,8 @@ Resources:
     Properties:
       BucketName: !Ref BucketName
       NotificationConfiguration:
-        LambdaConfigurations:
-          - Event: s3:ObjectCreated:*
-            Function: !GetAtt LambdaFunction.Arn
+        EventBridgeConfiguration:
+          EventBridgeEnabled: true
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -57,6 +56,7 @@ Resources:
                 Resource:
                   - !GetAtt S3Bucket.Arn
                   - !Join ['', [!GetAtt S3Bucket.Arn, '/*']]
+
   LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -81,10 +81,29 @@ Resources:
                   'body': json.dumps({'message': message})
               }
       Role: !GetAtt LambdaExecutionRole.Arn
-  S3InvokeLambdaPermission:
+
+  BucketObjectCreatedRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: S3ObjectCreatedRule
+      Description: Dispara cuando se sube un archivo al bucket S3
+      EventPattern:
+        source:
+          - aws.s3
+        detail-type:
+          - Object Created
+        detail:
+          bucket:
+            name:
+              - !Ref S3Bucket
+      Targets:
+        - Arn: !GetAtt LambdaFunction.Arn
+          Id: TargetLambdaFunction
+
+  LambdaInvokePermissionForEventBridge:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref LambdaFunctionName
+      FunctionName: !Ref LambdaFunction
       Action: lambda:InvokeFunction
-      Principal: s3.amazonaws.com
-      SourceArn: !GetAtt S3Bucket.Arn
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt BucketObjectCreatedRule.Arn
