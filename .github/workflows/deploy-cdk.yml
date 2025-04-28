@@ -32,7 +32,7 @@ jobs:
           aws-region: ${{ secrets.REGION }}
 
       - name: Ejecutar CDK Synth
-        run: cdk synth
+        run: cdk synth -c env=dev
 
       - name: Desplegar CDK
-        run: cdk deploy --require-approval never
+        run: cdk deploy --all --require-approval never -c env=dev
