@@ -17,7 +17,7 @@ def lambda_handler(event, context):
         pk_value = str(uuid.uuid4())
 
         item = {
-            'Pk': pk_value,
+            'pk': pk_value,
             'id': body['id'],
             'nombre': body['nombre'],
             'email': body['email']
